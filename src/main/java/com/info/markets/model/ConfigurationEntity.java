@@ -13,12 +13,4 @@ public class ConfigurationEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private int id;
-
-    @Column(name = "markets", nullable = false)
-    @OneToMany
-    private List<MarketConfigurationEntity> markets;
-
-    @Column(name = "ticker", nullable = false)
-    @OneToMany
-    private List<TickersConfigurationEntity> ticker;
 }

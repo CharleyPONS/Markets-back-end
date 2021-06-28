@@ -13,7 +13,8 @@ public class MarketConfigurationEntity {
     @Column(name = "id")
     private int id;
 
-    @Column(name = "functionalName")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "functional_name")
     private Markets functionalName;
 
     @Column(name = "mic")
