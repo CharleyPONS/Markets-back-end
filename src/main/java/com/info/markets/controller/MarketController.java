@@ -58,6 +58,6 @@ public class MarketController {
         String response = EntityUtils.toString(httpResponse.getEntity());
         MarketResponse marketResponse = mapper.readValue(response, MarketResponse.class);
         client.close();
-        return marketResponse.getData();
+        return marketResponse.getData().stream().filter(v -> v.open != 0).toList();
     }
 }
