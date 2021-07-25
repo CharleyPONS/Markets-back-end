@@ -1,6 +1,6 @@
 package com.info.markets.sevice;
 
-import com.info.markets.model.TickersConfigurationEntity;
+import com.info.markets.model.configuration.TickersConfigurationEntity;
 
 import java.util.List;
 

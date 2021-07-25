@@ -1,6 +1,6 @@
 package com.info.markets.sevice;
 
-import com.info.markets.model.MarketConfigurationEntity;
+import com.info.markets.model.configuration.MarketConfigurationEntity;
 import com.info.markets.repositories.MarketConfigurationRepository;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.info.markets.model;
+package com.info.markets.model.MarketStack;
 
 import lombok.Data;
 

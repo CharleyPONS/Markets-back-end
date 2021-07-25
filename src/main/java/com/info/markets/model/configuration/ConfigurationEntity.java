@@ -1,4 +1,4 @@
-package com.info.markets.model;
+package com.info.markets.model.configuration;
 
 import lombok.Data;
 

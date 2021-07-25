@@ -1,5 +1,6 @@
-package com.info.markets.model;
+package com.info.markets.model.configuration;
 
+import com.info.markets.model.MarketStack.Markets;
 import lombok.Data;
 
 import javax.persistence.*;

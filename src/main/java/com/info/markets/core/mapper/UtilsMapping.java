@@ -1,6 +1,7 @@
 package com.info.markets.core.mapper;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 public class UtilsMapping {
     private final ModelMapper modelMapper;
 
+    @Autowired
     public UtilsMapping(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
