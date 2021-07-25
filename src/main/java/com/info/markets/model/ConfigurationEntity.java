@@ -11,6 +11,5 @@ import java.util.List;
 public class ConfigurationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private int id;
 }

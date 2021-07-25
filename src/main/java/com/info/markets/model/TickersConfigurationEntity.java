@@ -1,22 +1,26 @@
 package com.info.markets.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Data
 @Entity
 @Table(name = "tickers_configuration")
-public class TickersConfigurationEntity {
+@NoArgsConstructor
+public class TickersConfigurationEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private int id;
 
-    @Column(name = "functionalName")
+    @Column(nullable = false)
     private Markets functionalName;
 
-    @Column(name = "symbol")
+    @Column()
     private String symbol;
 
 }

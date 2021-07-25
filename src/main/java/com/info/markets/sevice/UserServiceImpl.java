@@ -24,8 +24,12 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public Optional<UserEntity> findUser(int id){
-      return userRepository.findById(id);
+    public Optional<UserEntity> findUser(int id) throws Exception {
+     Optional<UserEntity> userEntity = userRepository.findById(id);
+     if(userEntity.isEmpty()){
+         throw new Exception("User not found");
+     }
+      return userEntity;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.info.markets.controller;
 
 import com.info.markets.model.UserEntity;
+import com.info.markets.sevice.UserService;
 import com.info.markets.sevice.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,28 +14,28 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserServiceImpl userServiceImpl){
-        this.userServiceImpl = userServiceImpl;
+    public UserController(UserServiceImpl userServiceImpl, UserService userService){
+        this.userService = userService;
     }
 
     @GetMapping
     public List<UserEntity> retrieveAllUsers(){
-        return this.userServiceImpl.findAllUser();
+        return this.userService.findAllUser();
 
     }
 
     @GetMapping("/{id}")
-    public Optional<UserEntity> retrieveUser(@PathVariable("id") int id){
-        return this.userServiceImpl.findUser(id);
+    public Optional<UserEntity> retrieveUser(@PathVariable("id") int id) throws Exception {
+        return this.userService.findUser(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public void createUser(@RequestBody UserEntity userEntity){
-        this.userServiceImpl.saveUser(userEntity);
+        this.userService.saveUser(userEntity);
     }
 
 

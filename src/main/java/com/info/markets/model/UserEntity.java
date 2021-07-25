@@ -1,33 +1,35 @@
 package com.info.markets.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.io.Serializable;
 
 @Data
 @Entity
 @Table(name = "users")
-public class UserEntity {
+@NoArgsConstructor
+public class UserEntity extends Auditable<UserEntity> implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private int id;
 
-    @Column(name = "firstname")
+    @Column()
     private String firstname;
 
-    @Column(name = "lastname")
+    @Column()
     private String lastname;
 
-    @Column(name = "email", nullable = false)
+    @Column(nullable = false)
     @Email
     private String email;
 
-    @Column(name = "favoriteMaket")
-    private String favoriteMaket;
+    @Column()
+    private String favoriteMarket;
 
-    @Column(name = "age")
+    @Column()
     private String age;
 
 }

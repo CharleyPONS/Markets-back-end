@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface UserService {
     void saveUser(UserEntity userEntity);
-    Optional<UserEntity> findUser(int id);
+    Optional<UserEntity> findUser(int id) throws Exception;
     List<UserEntity> findAllUser();
 }

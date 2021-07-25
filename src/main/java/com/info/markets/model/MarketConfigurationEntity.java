@@ -10,14 +10,13 @@ import javax.persistence.*;
 public class MarketConfigurationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private int id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "functional_name")
+    @Column(nullable = false)
     private Markets functionalName;
 
-    @Column(name = "mic")
+    @Column()
     private String mic;
 
 }

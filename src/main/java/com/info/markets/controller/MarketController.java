@@ -1,63 +1,75 @@
 package com.info.markets.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.info.markets.core.configuration.RestTemplateConfiguration;
+import com.info.markets.core.mapper.UtilsMapping;
+import com.info.markets.dto.MarketDTO;
 import com.info.markets.model.MarketConfigurationEntity;
 import com.info.markets.model.MarketResponse;
-import com.info.markets.model.MarketResponseApiData;
-import com.info.markets.sevice.MarketConfigurationServiceImpl;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import com.info.markets.sevice.MarketConfigurationService;
+import com.info.markets.sevice.MarketConfigurationService;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/market")
 public class MarketController {
-    private final MarketConfigurationServiceImpl marketConfigurationServiceImpl;
+    private final MarketConfigurationService marketConfigurationService;
     @Value("${market.api.access-key}")
     private String marketApiAccessKey;
-    private static final Logger LOGGER = LoggerFactory.getLogger(MarketConfigurationServiceImpl.class);
-    private ObjectMapper mapper = new ObjectMapper();
+    @Value("${market.api.uri}")
+    private String marketApiUri;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MarketConfigurationService.class);
+    private final RestTemplate restTemplate;
+    private final ModelMapper modelMapper;
+    private final UtilsMapping utilsMapping;
 
 
     @Autowired
-    public MarketController(MarketConfigurationServiceImpl marketConfigurationServiceImpl){
-        this.marketConfigurationServiceImpl = marketConfigurationServiceImpl;
+    public MarketController(MarketConfigurationService marketConfigurationService, RestTemplate restTemplate, ModelMapper modelMapper, UtilsMapping utilsMapping){
+        this.marketConfigurationService = marketConfigurationService;
+        this.restTemplate = restTemplate;
+        this.modelMapper = modelMapper;
+        this.utilsMapping = utilsMapping;
     }
 
     @GetMapping("/stock-index")
     @ResponseStatus(HttpStatus.OK)
-    public List<MarketResponseApiData> retrieveStockIndex(@RequestParam String stock) throws URISyntaxException, IOException, Exception {
-        final MarketConfigurationEntity marketConfig = this.marketConfigurationServiceImpl.findMarketByStockIndex(stock);
+    public List<MarketDTO> retrieveStockIndex(@RequestParam("stock") String stock) throws URISyntaxException, IOException, Exception {
+        final MarketConfigurationEntity marketConfig = this.marketConfigurationService.findMarketByStockIndex(stock);
         LOGGER.info(String.format("Market configuration, ", marketConfig));
-        final HttpGet apiMarket = new HttpGet("http://api.marketstack.com/v1/eod");
-        final CloseableHttpClient client = HttpClients.createDefault();
-        URI uri = new URIBuilder(apiMarket.getURI())
-                .addParameter("access_key", this.marketApiAccessKey)
-                .addParameter("symbols", marketConfig.getMic())
-                .build();
-        apiMarket.setURI(uri);
-        CloseableHttpResponse httpResponse = client.execute(apiMarket);
-        if(httpResponse.getStatusLine().getStatusCode() != 200){
-            throw new Exception(String.format("Bad request send to marketStack API", httpResponse));
+        HttpHeaders header = new HttpHeaders();
+        header.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.marketApiUri)
+                .pathSegment("eod")
+                .queryParam("access_key", this.marketApiAccessKey)
+                .queryParam("symbols", marketConfig.getMic());
+        HttpEntity<?> entity = new HttpEntity<>(header);
+        HttpEntity<MarketResponse> response = this.restTemplate.getForEntity(
+                builder.build().encode().toUriString(),
+                MarketResponse.class
+        );
+        if(!response.hasBody()){
+            throw new Exception("Bad request send to marketStack API");
         }
+        System.out.println(MarketDTO.class);
         LOGGER.info("marketStack API retrieve reach data");
-        String response = EntityUtils.toString(httpResponse.getEntity());
-        MarketResponse marketResponse = mapper.readValue(response, MarketResponse.class);
-        client.close();
-        return marketResponse.getData().stream().filter(v -> v.open != 0).toList();
+        return this.utilsMapping.ConvertEntityToDTO(Objects.requireNonNull(response.getBody()).getData(), MarketDTO.class);
     }
+
 }
