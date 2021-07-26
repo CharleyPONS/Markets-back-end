@@ -1,6 +1,5 @@
 package com.info.markets.model.configuration;
 
-import com.info.markets.model.MarketStack.Markets;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,9 +16,13 @@ public class TickersConfigurationEntity implements Serializable {
     private int id;
 
     @Column(nullable = false)
-    private Markets functionalName;
+    private String name;
 
     @Column()
     private String symbol;
+
+    @ManyToOne
+    @JoinColumn(name = "market_id", nullable = false)
+    private MarketConfigurationEntity market;
 
 }

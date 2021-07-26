@@ -1,26 +1,29 @@
 package com.info.markets.controller;
 
 import com.info.markets.core.mapper.UtilsMapping;
-import com.info.markets.dto.MarketDTO;
+import com.info.markets.dto.TickerDTO;
+import com.info.markets.dto.TickerEndOfDayDTO;
+import com.info.markets.dto.TickerIntradayDTO;
+import com.info.markets.dto.VolumeMarketTickerDataDTO;
+import com.info.markets.model.MarketStack.ticker.TickerEOD;
+import com.info.markets.model.MarketStack.ticker.TickerInformationResponse;
+import com.info.markets.model.MarketStack.ticker.TickerIntraday;
 import com.info.markets.model.configuration.MarketConfigurationEntity;
-import com.info.markets.model.MarketStack.MarketResponse;
+import com.info.markets.model.MarketStack.market.MarketResponse;
 import com.info.markets.sevice.MarketConfigurationService;
+import com.info.markets.sevice.MarketStackService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @RestController
 @RequestMapping("/market")
@@ -33,39 +36,64 @@ public class MarketController {
     private static final Logger LOGGER = LoggerFactory.getLogger(MarketConfigurationService.class);
     private final RestTemplate restTemplate;
     private final UtilsMapping utilsMapping;
+    private final MarketStackService marketStackService;
 
 
     @Autowired
-    public MarketController(MarketConfigurationService marketConfigurationService, RestTemplate restTemplate, UtilsMapping utilsMapping){
+    public MarketController(MarketConfigurationService marketConfigurationService, RestTemplate restTemplate, UtilsMapping utilsMapping, MarketStackService marketStackService) {
         this.marketConfigurationService = marketConfigurationService;
         this.restTemplate = restTemplate;
         this.utilsMapping = utilsMapping;
+        this.marketStackService = marketStackService;
     }
 
     @GetMapping("/stock-index")
     @ResponseStatus(HttpStatus.OK)
-    public List<MarketDTO> retrieveStockIndex(@RequestParam("stock") String stock) throws URISyntaxException, IOException, Exception {
+    public List<VolumeMarketTickerDataDTO> retrieveStockIndex(@RequestParam("stock") String stock) throws URISyntaxException, IOException, Exception {
         final MarketConfigurationEntity marketConfig = this.marketConfigurationService.findMarketByStockIndex(stock);
         LOGGER.info(String.format("Market configuration, ", marketConfig));
-        HttpHeaders header = new HttpHeaders();
-        header.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.marketApiUri)
-                .pathSegment("eod")
-                .queryParam("access_key", this.marketApiAccessKey)
-                .queryParam("symbols", marketConfig.getMic());
-        HttpEntity<?> entity = new HttpEntity<>(header);
-        HttpEntity<MarketResponse> response = this.restTemplate.getForEntity(
-                builder.build().encode().toUriString(),
-                MarketResponse.class
+        List<String> path = new ArrayList<String>(
+                List.of("eod")
         );
-        if(!response.hasBody()){
-            throw new Exception("Bad request send to marketStack API");
-        }
-        System.out.println(response.getBody());
-        LOGGER.info("marketStack API retrieve reach data");
+        Map<String, String> query = Map.of("access_key", this.marketApiAccessKey, "symbols", marketConfig.getMic());
+        HttpEntity<MarketResponse> response = this.marketStackService.externalCallApi(this.marketApiUri, query, path, MarketResponse.class);
         return this.utilsMapping.
-                ConvertEntityToDTO(Objects.requireNonNull(response.getBody()).getData(),
-                MarketDTO.class);
+                convertListEntityToDTO(Objects.requireNonNull(response.getBody()).getData(),
+                        VolumeMarketTickerDataDTO.class);
     }
 
+    @GetMapping("/ticker-stock-index")
+    @ResponseStatus(HttpStatus.OK)
+    public List<TickerDTO> retrieveAllTickerByStockIndex(@RequestParam("stock") String stock) throws Exception {
+        final MarketConfigurationEntity marketConfig = this.marketConfigurationService.findMarketByStockIndex(stock);
+        LOGGER.info(String.format("Market configuration, ", marketConfig));
+        List<String> path = new ArrayList<String>(
+                List.of("tickers")
+        );
+        Map<String, String> query = Map.of("access_key", this.marketApiAccessKey, "exchange", marketConfig.getMic());
+        HttpEntity<TickerInformationResponse> response = this.marketStackService.externalCallApi(this.marketApiUri, query, path, TickerInformationResponse.class);
+        return this.utilsMapping.convertListEntityToDTO(Objects.requireNonNull(response.getBody()).getData(), TickerDTO.class);
+    }
+
+    @GetMapping("/ticker-eod")
+    @ResponseStatus(HttpStatus.OK)
+    public TickerEndOfDayDTO retrieveTickerEndOfDayData(@RequestParam("ticker") String ticker) throws Exception {
+        List<String> path = new ArrayList<String>(
+                List.of("tickers", ticker, "eod")
+        );
+        Map<String, String> query = Map.of("access_key", this.marketApiAccessKey);
+        HttpEntity<TickerEOD> response = this.marketStackService.externalCallApi(this.marketApiUri, query, path, TickerEOD.class);
+        return this.utilsMapping.convertObjectEntityToDTO(Objects.requireNonNull(response.getBody()).getData(), TickerEndOfDayDTO.class);
+    }
+
+    @GetMapping("/ticker-intraday")
+    @ResponseStatus(HttpStatus.OK)
+    public TickerIntradayDTO retrieveTickerIntraDayData(@RequestParam("ticker") String ticker) throws Exception {
+        List<String> path = new ArrayList<String>(
+                List.of("tickers", ticker, "intraday")
+        );
+        Map<String, String> query = Map.of("access_key", this.marketApiAccessKey);
+        HttpEntity<TickerIntraday> response = this.marketStackService.externalCallApi(this.marketApiUri, query, path, TickerIntraday.class);
+        return this.utilsMapping.convertObjectEntityToDTO(Objects.requireNonNull(response.getBody()).getData(), TickerIntradayDTO.class);
+    }
 }

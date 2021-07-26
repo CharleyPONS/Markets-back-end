@@ -1,5 +1,6 @@
-package com.info.markets.model.MarketStack;
+package com.info.markets.model.MarketStack.shared;
 
+import com.info.markets.model.MarketStack.shared.TimeZoneTicker;
 import lombok.Data;
 
 @Data

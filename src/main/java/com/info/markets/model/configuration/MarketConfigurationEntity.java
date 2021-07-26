@@ -1,9 +1,10 @@
 package com.info.markets.model.configuration;
 
-import com.info.markets.model.MarketStack.Markets;
+import com.info.markets.model.MarketStack.market.Markets;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Data
 @Entity
@@ -19,5 +20,8 @@ public class MarketConfigurationEntity {
 
     @Column()
     private String mic;
+
+    @OneToMany(mappedBy = "market")
+    private Set<TickersConfigurationEntity> tickers;
 
 }
