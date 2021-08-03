@@ -1,5 +1,6 @@
 package com.info.markets.model.configuration;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,7 +22,14 @@ public class TickersConfigurationEntity implements Serializable {
     @Column()
     private String symbol;
 
-    @ManyToOne
+    @Column()
+    private boolean has_eod;
+
+    @Column()
+    private boolean has_intraday;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @JoinColumn(name = "market_id", nullable = false)
     private MarketConfigurationEntity market;
 

@@ -6,10 +6,12 @@ import com.info.markets.dto.TickerEndOfDayDTO;
 import com.info.markets.dto.TickerIntradayDTO;
 import com.info.markets.dto.VolumeMarketTickerDataDTO;
 import com.info.markets.model.MarketStack.ticker.TickerEOD;
+import com.info.markets.model.MarketStack.ticker.TickerEODInformation;
 import com.info.markets.model.MarketStack.ticker.TickerInformationResponse;
 import com.info.markets.model.MarketStack.ticker.TickerIntraday;
 import com.info.markets.model.configuration.MarketConfigurationEntity;
 import com.info.markets.model.MarketStack.market.MarketResponse;
+import com.info.markets.model.configuration.TickersConfigurationEntity;
 import com.info.markets.sevice.MarketConfigurationService;
 import com.info.markets.sevice.MarketStackService;
 import org.slf4j.Logger;
@@ -19,11 +21,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/market")
@@ -34,15 +37,13 @@ public class MarketController {
     @Value("${market.api.uri}")
     private String marketApiUri;
     private static final Logger LOGGER = LoggerFactory.getLogger(MarketConfigurationService.class);
-    private final RestTemplate restTemplate;
     private final UtilsMapping utilsMapping;
     private final MarketStackService marketStackService;
 
 
     @Autowired
-    public MarketController(MarketConfigurationService marketConfigurationService, RestTemplate restTemplate, UtilsMapping utilsMapping, MarketStackService marketStackService) {
+    public MarketController(MarketConfigurationService marketConfigurationService, UtilsMapping utilsMapping, MarketStackService marketStackService) {
         this.marketConfigurationService = marketConfigurationService;
-        this.restTemplate = restTemplate;
         this.utilsMapping = utilsMapping;
         this.marketStackService = marketStackService;
     }
@@ -75,9 +76,9 @@ public class MarketController {
         return this.utilsMapping.convertListEntityToDTO(Objects.requireNonNull(response.getBody()).getData(), TickerDTO.class);
     }
 
-    @GetMapping("/ticker-eod")
+    @GetMapping("/ticker-eod/{ticker}")
     @ResponseStatus(HttpStatus.OK)
-    public TickerEndOfDayDTO retrieveTickerEndOfDayData(@RequestParam("ticker") String ticker) throws Exception {
+    public TickerEndOfDayDTO retrieveTickerEndOfDayData(@PathVariable("ticker") String ticker) throws Exception {
         List<String> path = new ArrayList<String>(
                 List.of("tickers", ticker, "eod")
         );
@@ -86,14 +87,42 @@ public class MarketController {
         return this.utilsMapping.convertObjectEntityToDTO(Objects.requireNonNull(response.getBody()).getData(), TickerEndOfDayDTO.class);
     }
 
-    @GetMapping("/ticker-intraday")
+    @GetMapping("/ticker-intraday/{ticker}")
     @ResponseStatus(HttpStatus.OK)
-    public TickerIntradayDTO retrieveTickerIntraDayData(@RequestParam("ticker") String ticker) throws Exception {
+    public TickerIntradayDTO retrieveTickerIntraDayData(@PathVariable("ticker") String ticker) throws Exception {
         List<String> path = new ArrayList<String>(
                 List.of("tickers", ticker, "intraday")
         );
         Map<String, String> query = Map.of("access_key", this.marketApiAccessKey);
         HttpEntity<TickerIntraday> response = this.marketStackService.externalCallApi(this.marketApiUri, query, path, TickerIntraday.class);
         return this.utilsMapping.convertObjectEntityToDTO(Objects.requireNonNull(response.getBody()).getData(), TickerIntradayDTO.class);
+    }
+
+    @GetMapping("/all-ticker-eod/{market}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<TickerEndOfDayDTO> retrieveAllTickerEndDayData(@PathVariable("market") String market) throws Exception {
+        MarketConfigurationEntity marketConfiguration = this.marketConfigurationService.findMarketByStockIndex(market);
+        if (marketConfiguration.getTickers().isEmpty()) {
+            throw new Exception("No ticker provided for this market");
+        }
+        Map<String, String> query = Map.of("access_key", this.marketApiAccessKey);
+        final List<CompletableFuture<HttpEntity<TickerEOD>>> response = new ArrayList<>();
+        for (TickersConfigurationEntity v : marketConfiguration.getTickers().stream().filter(TickersConfigurationEntity::isHas_eod).collect(Collectors.toList())) {
+            response.add(this.marketStackService.findAllTickerByMarket(this.marketApiUri, query, new ArrayList<>(
+                    List.of("tickers", v.getSymbol().endsWith(".PA") ? v.getSymbol().replace(".PA", ".XPAR") : v.getSymbol().concat(".XPAR"), "eod")
+            ), TickerEOD.class));
+        }
+        CompletableFuture.allOf(response.toArray(new CompletableFuture[response.size()]));
+        return this.utilsMapping.convertListEntityToDTO(Objects.requireNonNull( response
+                .stream()
+                .map(CompletableFuture::join)
+                .map(v -> v.getBody().getData())
+                .collect(Collectors.toList())), TickerEndOfDayDTO.class);
+    }
+
+    @GetMapping("/test")
+    @ResponseStatus(HttpStatus.OK)
+    public void test() {
+        List<MarketConfigurationEntity> ce = this.marketConfigurationService.findAllMarket();
     }
 }
