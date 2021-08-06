@@ -1,8 +1,9 @@
-package com.info.markets.sevice;
+package com.info.markets.sevice.user;
 
-import com.info.markets.model.UserEntity;
+import com.info.markets.model.user.UserEntity;
 import com.info.markets.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +31,11 @@ public class UserServiceImpl implements UserService{
          throw new Exception("User not found");
      }
       return userEntity;
+    }
+
+    @Override
+    public UserEntity findUserByName(String username) throws UsernameNotFoundException{
+        return userRepository.findByUserName(username).orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
     }
 
     @Override

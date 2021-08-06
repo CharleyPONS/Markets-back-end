@@ -1,4 +1,4 @@
-package com.info.markets.sevice;
+package com.info.markets.sevice.tickers;
 
 import com.info.markets.model.configuration.TickersConfigurationEntity;
 

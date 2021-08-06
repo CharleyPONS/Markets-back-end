@@ -1,4 +1,4 @@
-package com.info.markets.sevice;
+package com.info.markets.sevice.tickers;
 
 import com.info.markets.model.configuration.TickersConfigurationEntity;
 import com.info.markets.repositories.TickersConfigurationRepository;
@@ -6,7 +6,7 @@ import com.info.markets.repositories.TickersConfigurationRepository;
 import java.util.List;
 
 public class TickersConfigurationServiceImpl implements TickersConfigurationService{
-private TickersConfigurationRepository tickersConfigurationRepository;
+private final TickersConfigurationRepository tickersConfigurationRepository;
 
 public TickersConfigurationServiceImpl(TickersConfigurationRepository tickersConfigurationRepository) {
     this.tickersConfigurationRepository = tickersConfigurationRepository;

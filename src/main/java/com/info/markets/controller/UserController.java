@@ -1,10 +1,9 @@
 package com.info.markets.controller;
 
-import com.info.markets.model.UserEntity;
-import com.info.markets.sevice.UserService;
-import com.info.markets.sevice.UserServiceImpl;
+import com.info.markets.model.user.UserEntity;
+import com.info.markets.sevice.user.UserService;
+import com.info.markets.sevice.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 

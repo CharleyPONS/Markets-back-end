@@ -1,4 +1,4 @@
-package com.info.markets.sevice;
+package com.info.markets.sevice.markets;
 
 import com.info.markets.model.MarketStack.ticker.TickerEOD;
 import com.info.markets.model.MarketStack.ticker.TickerIntraday;
