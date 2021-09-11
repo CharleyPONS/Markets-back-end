@@ -7,10 +7,9 @@ import java.util.Optional;
 
 public interface UserService {
     void saveUser(UserEntity userEntity);
-
     Optional<UserEntity> findUser(int id) throws Exception;
-
     UserEntity findUserByName(String username);
-
     List<UserEntity> findAllUser();
+    Boolean existsByMail(String email);
+    Boolean existsByUserName(String username);
 }

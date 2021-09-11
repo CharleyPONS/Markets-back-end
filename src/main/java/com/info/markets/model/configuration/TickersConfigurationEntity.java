@@ -30,7 +30,7 @@ public class TickersConfigurationEntity implements Serializable {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JoinColumn(name = "market_id", nullable = false)
+    @JoinColumn(name = "market_id")
     private MarketConfigurationEntity market;
 
 }

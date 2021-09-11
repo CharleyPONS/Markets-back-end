@@ -1,7 +1,6 @@
 package com.info.markets.model.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.info.markets.model.MarketStack.market.Markets;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

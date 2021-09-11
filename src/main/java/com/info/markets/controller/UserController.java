@@ -20,13 +20,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
+    @GetMapping()
     public List<UserEntity> retrieveAllUsers(){
         return this.userService.findAllUser();
 
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/:id")
     public Optional<UserEntity> retrieveUser(@PathVariable("id") int id) throws Exception {
         return this.userService.findUser(id);
     }

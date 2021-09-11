@@ -101,12 +101,12 @@ public class MarketController {
     @ResponseStatus(HttpStatus.OK)
     public List<TickerEndOfDayDTO> retrieveAllTickerEndDayData(@PathVariable("market") String market) throws Exception {
         MarketConfigurationEntity marketConfiguration = this.marketConfigurationService.findMarketByStockIndex(market);
-        if (marketConfiguration.getTickers().isEmpty()) {
+        if (marketConfiguration.getTickers() == null || marketConfiguration.getTickers().isEmpty()) {
             throw new Exception("No ticker provided for this market");
         }
         Map<String, String> query = Map.of("access_key", this.marketApiAccessKey);
         final List<CompletableFuture<HttpEntity<TickerEOD>>> response = new ArrayList<>();
-        for (TickersConfigurationEntity v : marketConfiguration.getTickers().stream().filter(TickersConfigurationEntity::isHas_eod).collect(Collectors.toList())) {
+        for (TickersConfigurationEntity v : marketConfiguration.getTickers().stream().filter(   TickersConfigurationEntity::isHas_eod).collect(Collectors.toList())) {
             response.add(this.marketStackService.findAllTickerByMarket(this.marketApiUri, query, new ArrayList<>(
                     List.of("tickers", v.getSymbol().endsWith(".PA") ? v.getSymbol().replace(".PA", ".XPAR") : v.getSymbol().concat(".XPAR"), "eod")
             ), TickerEOD.class));

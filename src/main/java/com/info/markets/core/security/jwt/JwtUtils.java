@@ -9,7 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 @Component
 public class JwtUtils {
@@ -19,12 +25,16 @@ public class JwtUtils {
     @Value("${market.jwt.expiratios.ms}")
     private String expirationJwtMs;
 
-    public String generateJwtToken(Authentication authentication){
+    public String generateJwtToken(Authentication authentication) throws ParseException {
         UserDetailsInfo userDetailsInfo = (UserDetailsInfo) authentication.getPrincipal();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MILLISECOND, Integer.parseInt(expirationJwtMs));
+            Date addMilliSeconds = calendar.getTime();
+
 
         return Jwts.builder().setSubject((userDetailsInfo.getUsername()))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + expirationJwtMs))
+                .setExpiration(addMilliSeconds)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }

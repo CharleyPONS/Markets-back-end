@@ -32,6 +32,12 @@ public class UserDetailsInfo implements UserDetails {
         this.authorities = authorities;
     }
 
+    public UserDetailsInfo(int id, String username, String email) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+    }
+
     public static UserDetailsInfo buildUserDetails(UserEntity user){
         return new UserDetailsInfo(user.getId(), user.getFirstname(), user.getMail(), user.getPassword(),
                 user.getRole().stream()
@@ -49,23 +55,31 @@ public class UserDetailsInfo implements UserDetails {
         return username;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }

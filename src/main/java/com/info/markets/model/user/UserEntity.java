@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -23,9 +24,11 @@ public class UserEntity extends Auditable<UserEntity> implements Serializable {
     private int id;
 
     @Column()
+    @Nullable
     private String firstname;
 
     @Column()
+    @Nullable
     private String lastname;
 
     @Column(nullable = false)
@@ -47,9 +50,11 @@ public class UserEntity extends Auditable<UserEntity> implements Serializable {
     private List<UserRoleEntity> role;
 
     @Column()
+    @Nullable
     private String favoriteMarket;
 
     @Column()
+    @Nullable
     private String age;
 
 }
